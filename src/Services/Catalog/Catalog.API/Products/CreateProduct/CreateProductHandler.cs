@@ -4,10 +4,10 @@ public record CreateProductCommand(string Name, List<string> Category, string De
     : ICommand<CreateProductResult>;
 public record CreateProductResult(Guid Id);
 
-internal class CreateProductCommandEndpoint
+public class CreateProductCommandHandler(IDocumentSession session)
     : ICommandHandler<CreateProductCommand, CreateProductResult>
 {
-    public Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
+    public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
     {
         // create Product entity from command object
 
@@ -21,9 +21,9 @@ internal class CreateProductCommandEndpoint
         };
 
         // save to database
-
-
+        session.Store(product);
+        await session.SaveChangesAsync(cancellationToken);
         //return result
-        return Task.FromResult(new CreateProductResult(Guid.NewGuid()));
+        return new CreateProductResult(product.Id);
     }
 }
